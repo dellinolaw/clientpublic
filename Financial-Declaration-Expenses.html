@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Declaration – Monthly Expenses | DFLG</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f4f8;
+      color: #1a2332;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #1e3a5f;
+      color: white;
+      padding: 14px 24px;
+    }
+    .header-firm {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.65;
+      margin-bottom: 2px;
+    }
+    .header h1 { font-size: 17px; font-weight: 600; }
+    .header .subtitle { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+
+    /* ── Progress ── */
+    .progress-bar-container {
+      background: #e8edf3;
+      padding: 10px 24px 12px;
+      border-bottom: 1px solid #d0d8e4;
+    }
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: #5a6b80;
+    }
+    .progress-bar-track {
+      height: 5px;
+      background: #c5d1de;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: #1e3a5f;
+      border-radius: 3px;
+      transition: width 0.35s ease;
+    }
+
+    /* ── Layout ── */
+    .main {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 24px 16px 100px;
+    }
+
+    /* ── Card ── */
+    .section-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.09);
+      overflow: hidden;
+      display: none;
+    }
+    .section-card.active { display: block; }
+
+    .section-header {
+      background: #1e3a5f;
+      color: white;
+      padding: 18px 24px;
+    }
+    .section-header .step-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.65;
+      margin-bottom: 4px;
+    }
+    .section-header h2 { font-size: 19px; font-weight: 600; }
+    .section-header p  { font-size: 13px; opacity: 0.8; margin-top: 6px; line-height: 1.5; }
+
+    .section-body { padding: 24px; }
+
+    /* ── Fields ── */
+    .field-group { margin-bottom: 16px; }
+    .field-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #3a4a5c;
+      margin-bottom: 5px;
+    }
+    .field-group input[type="text"],
+    .field-group input[type="number"],
+    .field-group select,
+    .field-group textarea {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #c8d4e0;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #1a2332;
+      background: #fafbfc;
+      transition: border-color 0.15s;
+    }
+    .field-group input:focus,
+    .field-group select:focus,
+    .field-group textarea:focus {
+      outline: none;
+      border-color: #1e3a5f;
+      background: white;
+    }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* ── Radio ── */
+    .radio-group { display: flex; gap: 24px; margin-top: 4px; }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 14px;
+      font-weight: 400;
+      cursor: pointer;
+    }
+
+    /* ── Conditional ── */
+    .conditional {
+      display: none;
+      padding: 16px;
+      background: #f5f8fc;
+      border-radius: 6px;
+      border: 1px solid #e0e8f0;
+      margin-top: 8px;
+    }
+    .conditional.visible { display: block; }
+
+    /* ── Expense table ── */
+    .expense-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .expense-table tr { border-bottom: 1px solid #eef1f5; }
+    .expense-table tr:last-child { border-bottom: none; }
+    .expense-table td { padding: 8px 0; vertical-align: middle; }
+    .expense-table td.label-cell {
+      font-size: 14px;
+      color: #2d3f52;
+      padding-right: 16px;
+      line-height: 1.4;
+    }
+    .expense-table td.input-cell { width: 136px; min-width: 136px; }
+
+    /* ── Dollar input ── */
+    .dollar-input-wrap {
+      display: flex;
+      align-items: center;
+      border: 1px solid #c8d4e0;
+      border-radius: 6px;
+      background: #fafbfc;
+      overflow: hidden;
+    }
+    .dollar-input-wrap:focus-within {
+      border-color: #1e3a5f;
+      background: white;
+    }
+    .dollar-sign {
+      padding: 8px 5px 8px 10px;
+      font-size: 14px;
+      color: #5a6b80;
+      flex-shrink: 0;
+    }
+    .dollar-input-wrap input {
+      border: none !important;
+      background: transparent !important;
+      padding: 8px 10px 8px 2px !important;
+      font-size: 14px;
+      width: 100%;
+      text-align: right;
+      min-width: 0;
+    }
+    .dollar-input-wrap input:focus { outline: none; }
+
+    /* ── Subtotal row ── */
+    .subtotal-row { background: #eef4fb; border-top: 2px solid #b8cfe0 !important; }
+    .subtotal-row td.label-cell { font-weight: 600; color: #1e3a5f; }
+    .subtotal-display {
+      text-align: right;
+      font-weight: 700;
+      font-size: 15px;
+      color: #1e3a5f;
+      padding: 8px 10px;
+      background: #dce9f5;
+      border-radius: 6px;
+    }
+
+    /* ── Specify input ── */
+    .specify-input {
+      border: none !important;
+      border-bottom: 1px solid #c8d4e0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      padding: 2px 4px !important;
+      font-size: 13px;
+      width: 160px;
+      display: inline-block;
+    }
+    .specify-input:focus { outline: none; border-bottom-color: #1e3a5f !important; }
+
+    /* ── Groceries row ── */
+    .people-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .people-input {
+      width: 52px;
+      padding: 5px 8px;
+      border: 1px solid #c8d4e0;
+      border-radius: 5px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    /* ── Debt table ── */
+    .debt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .debt-table th {
+      background: #eef4fb;
+      color: #1e3a5f;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 8px 8px;
+      text-align: left;
+      border-bottom: 2px solid #b8cfe0;
+    }
+    .debt-table td {
+      padding: 5px 6px;
+      border-bottom: 1px solid #eef1f5;
+      vertical-align: middle;
+    }
+    .debt-table input[type="text"],
+    .debt-table input[type="number"] {
+      width: 100%;
+      border: 1px solid #c8d4e0;
+      border-radius: 5px;
+      padding: 6px 8px;
+      font-size: 13px;
+      background: #fafbfc;
+    }
+    .debt-table input:focus { outline: none; border-color: #1e3a5f; background: white; }
+    .debt-table tfoot td {
+      font-weight: 700;
+      background: #eef4fb;
+      color: #1e3a5f;
+      padding: 8px 8px;
+    }
+    .debt-total-display { text-align: right; font-size: 15px; font-weight: 700; }
+
+    /* ── Nav bar ── */
+    .nav-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-top: 1px solid #d0d8e4;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+    }
+    .nav-bar .step-info { font-size: 13px; color: #5a6b80; }
+
+    .btn {
+      padding: 10px 22px;
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-secondary { background: #e8edf3; color: #3a4a5c; }
+    .btn-secondary:hover { background: #d0d9e4; }
+    .btn-primary { background: #1e3a5f; color: white; }
+    .btn-primary:hover { background: #16304f; }
+    .btn-generate { background: #1a7a4a; color: white; }
+    .btn-generate:hover { background: #15633c; }
+
+    /* ── Review page ── */
+    .review-section { margin-bottom: 20px; }
+    .review-section h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e3a5f;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #1e3a5f;
+    }
+    .review-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid #f0f3f7;
+      font-size: 13px;
+    }
+    .review-row .rl { color: #3a4a5c; }
+    .review-row .rv { font-weight: 500; color: #1a2332; }
+    .review-total-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0 4px;
+      border-top: 2px solid #1e3a5f;
+      margin-top: 4px;
+      font-weight: 700;
+      font-size: 14px;
+      color: #1e3a5f;
+    }
+    .grand-total-box {
+      background: #1e3a5f;
+      color: white;
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+    .grand-total-box .gt-label { font-size: 13px; font-weight: 600; opacity: 0.9; }
+    .grand-total-box .gt-amount { font-size: 26px; font-weight: 700; }
+
+    .disclaimer-note {
+      font-size: 12px;
+      color: #7a8a99;
+      margin-top: 16px;
+      line-height: 1.6;
+      padding: 12px 14px;
+      background: #f7f9fb;
+      border-radius: 6px;
+      border-left: 3px solid #b8cfe0;
+    }
+
+    /* ── Print output (screen preview) ── */
+    #print-output { display: none; }
+
+    /* ── Print styles ── */
+    @media print {
+      body { background: white !important; }
+      .header,
+      .progress-bar-container,
+      .main,
+      .nav-bar,
+      .print-controls { display: none !important; }
+      #print-output { display: block !important; }
+
+      .print-doc {
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 11pt;
+        color: black;
+        padding: 0;
+      }
+      .print-doc-header {
+        text-align: center;
+        margin-bottom: 18pt;
+        padding-bottom: 10pt;
+        border-bottom: 2pt solid black;
+      }
+      .print-doc-header h1 { font-size: 13pt; font-weight: bold; text-transform: uppercase; }
+      .print-doc-header .sub { font-size: 10pt; margin-top: 4pt; }
+
+      .print-section { margin-bottom: 14pt; page-break-inside: avoid; }
+      .print-section h2 {
+        font-size: 11pt;
+        font-weight: bold;
+        text-transform: uppercase;
+        border-bottom: 1pt solid black;
+        padding-bottom: 3pt;
+        margin-bottom: 7pt;
+      }
+
+      .print-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+      .print-table td, .print-table th {
+        border: 0.5pt solid #999;
+        padding: 3.5pt 5pt;
+        vertical-align: top;
+      }
+      .print-table th { background: #eee; font-weight: bold; font-size: 9.5pt; }
+      .print-table .total-row td { font-weight: bold; background: #f0f0f0; }
+      .print-table .grand-row td { font-weight: bold; background: #dce9f5; font-size: 11pt; }
+      .print-table .amt { text-align: right; white-space: nowrap; }
+
+      .print-grand-total {
+        border: 2pt solid black;
+        padding: 8pt 10pt;
+        margin-top: 10pt;
+        font-size: 12pt;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+      }
+      .print-signature {
+        margin-top: 30pt;
+        border-top: 0.5pt solid black;
+        padding-top: 8pt;
+        font-size: 10pt;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════ -->
+<div class="header">
+  <div class="header-firm">Dellino Family Law Group</div>
+  <h1>Financial Declaration — Monthly Expenses</h1>
+  <div class="subtitle">Washington State Superior Court</div>
+</div>
+
+<div class="progress-bar-container">
+  <div class="progress-labels">
+    <span id="progress-step-label">Step 1 of 13</span>
+    <span id="progress-pct-label">8%</span>
+  </div>
+  <div class="progress-bar-track">
+    <div class="progress-bar-fill" id="progress-fill" style="width:8%"></div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ══════════════════════════════════════════════
+     STEP 1 — Personal Information
+════════════════════════════════════════════════ -->
+<div class="section-card active" id="step-1">
+  <div class="section-header">
+    <div class="step-label">Step 1 of 13</div>
+    <h2>Your Personal Information</h2>
+    <p>Please provide your background information for the financial declaration.</p>
+  </div>
+  <div class="section-body">
+    <div class="field-group">
+      <label>Full Name</label>
+      <input type="text" id="pi-name" placeholder="Last, First Middle">
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label>Highest Year of Education Completed</label>
+        <select id="pi-education">
+          <option value="">— Select —</option>
+          <option>Some high school</option>
+          <option>High school diploma / GED</option>
+          <option>Some college</option>
+          <option>Associate's degree</option>
+          <option>Bachelor's degree</option>
+          <option>Some graduate school</option>
+          <option>Master's degree</option>
+          <option>Doctoral / Professional degree (JD, MD, PhD)</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Your Job / Profession</label>
+        <input type="text" id="pi-profession" placeholder="e.g., Teacher, Accountant">
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Are you working now?</label>
+      <div class="radio-group">
+        <label><input type="radio" name="working" value="yes" onchange="toggleWorkStatus()"> Yes</label>
+        <label><input type="radio" name="working" value="no"  onchange="toggleWorkStatus()"> No</label>
+      </div>
+    </div>
+    <div class="conditional" id="working-yes">
+      <div class="field-row">
+        <div class="field-group">
+          <label>Date Hired (Month / Year)</label>
+          <input type="text" id="pi-hired" placeholder="e.g., March 2019">
+        </div>
+        <div class="field-group">
+          <label>Monthly Pay Before Taxes</label>
+          <div class="dollar-input-wrap">
+            <span class="dollar-sign">$</span>
+            <input type="number" id="pi-pay" placeholder="0.00" min="0" step="0.01">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="conditional" id="working-no">
+      <div class="field-row">
+        <div class="field-group">
+          <label>Last Date Worked (Month / Year)</label>
+          <input type="text" id="pi-last-worked" placeholder="e.g., October 2023">
+        </div>
+        <div class="field-group">
+          <label>Most Recent Monthly Pay Before Taxes</label>
+          <div class="dollar-input-wrap">
+            <span class="dollar-sign">$</span>
+            <input type="number" id="pi-pay-last" placeholder="0.00" min="0" step="0.01">
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Why are you not working now?</label>
+        <textarea id="pi-not-working-reason" rows="2" placeholder="Please explain..."></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     STEP 2 — Available Assets
+════════════════════════════════════════════════ -->
+<div class="section-card" id="step-2">
+  <div class="section-header">
+    <div class="step-label">Step 2 of 13</div>
+    <h2>Available Assets</h2>
+    <p>List your liquid assets — cash, stocks, bonds, and other assets easily converted to cash.</p>
+  </div>
+  <div class="section-body">
+    <table class="expense-table">
+      <tr>
+        <td class="label-cell">Cash on hand and money in all checking &amp; savings accounts</td>
+        <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="asset-cash"   class="asset-input" placeholder="0" min="0" step="0.01" oninput="calcAssets()"></div></td>
+      </tr>
+      <tr>
+        <td class="label-cell">Stocks, bonds, CDs and other liquid financial accounts</td>
+        <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="asset-stocks" class="asset-input" placeholder="0" min="0" step="0.01" oninput="calcAssets()"></div></td>
+      </tr>
+      <tr>
+        <td class="label-cell">Cash value of life insurance</td>
+        <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="asset-life"   class="asset-input" placeholder="0" min="0" step="0.01" oninput="calcAssets()"></div></td>
+      </tr>
+      <tr>
+        <td class="label-cell">Other liquid assets</td>
+        <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="asset-other"  class="asset-input" placeholder="0" min="0" step="0.01" oninput="calcAssets()"></div></td>
+      </tr>
+      <tr class="subtotal-row">
+        <td class="label-cell">Total Available Assets</td>
+        <td class="input-cell"><div class="subtotal-display" id="asset-total">$0.00</div></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     STEP 3 — Housing (A)
+════════════════════════════════════════════════ -->
+<div class="section-card" id="step-3">
+  <div class="section-header">
+    <div class="step-label">Step 3 of 13</div>
+    <h2>A. Housing Expenses</h2>
+    <p>Enter your expected monthly housing costs after separation. Enter 0 for items that don't apply.</p>
+  </div>
+  <div class="section-body">
+    <table class="expense-table">
+      <tr><td class="label-cell">Rent / Mortgage Payment</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input housing" id="h1" placeholder="0" min="0" step="0.01" oninput="calcSection('housing','h-total')"></div></td></tr>
+      <tr><td class="label-cell">Property Tax (if not included in monthly mortgage payment)</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input housing" id="h2" placeholder="0" min="0" step="0.01" oninput="calcSection('housing','h-total')"></div></td></tr>
+      <tr><td class="label-cell">Homeowner's or Rental Insurance</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input housing" id="h3" placeholder="0" min="0" step="0.01" oninput="calcSection('housing','h-total')"></div></td></tr>
+      <tr><td class="label-cell">Other mortgage, contract, or debt payments based on equity in your home</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input housing" id="h4" placeholder="0" min="0" step="0.01" oninput="calcSection('housing','h-total')"></div></td></tr>
+      <tr><td class="label-cell">Homeowner's Association dues or fees</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input housing" id="h5" placeholder="0" min="0" step="0.01" oninput="calcSection('housing','h-total')"></div></td></tr>
+      <tr class="subtotal-row">
+        <td class="label-cell">Total Housing Expenses</td>
+        <td class="input-cell"><div class="subtotal-display" id="h-total">$0.00</div></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     STEP 4 — Utilities (B)
+════════════════════════════════════════════════ -->
+<div class="section-card" id="step-4">
+  <div class="section-header">
+    <div class="step-label">Step 4 of 13</div>
+    <h2>B. Utilities Expenses</h2>
+    <p>Enter your average monthly utility costs.</p>
+  </div>
+  <div class="section-body">
+    <table class="expense-table">
+      <tr><td class="label-cell">Electricity and heating (gas and oil)</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input utilities" id="u1" placeholder="0" min="0" step="0.01" oninput="calcSection('utilities','u-total')"></div></td></tr>
+      <tr><td class="label-cell">Water, sewer, garbage</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input utilities" id="u2" placeholder="0" min="0" step="0.01" oninput="calcSection('utilities','u-total')"></div></td></tr>
+      <tr><td class="label-cell">Telephone(s)</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input utilities" id="u3" placeholder="0" min="0" step="0.01" oninput="calcSection('utilities','u-total')"></div></td></tr>
+      <tr><td class="label-cell">Cable, Internet</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input utilities" id="u4" placeholder="0" min="0" step="0.01" oninput="calcSection('utilities','u-total')"></div></td></tr>
+      <tr><td class="label-cell">Other: <input type="text" class="specify-input" id="u5-label" placeholder="specify..."></td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input utilities" id="u5" placeholder="0" min="0" step="0.01" oninput="calcSection('utilities','u-total')"></div></td></tr>
+      <tr class="subtotal-row">
+        <td class="label-cell">Total Utilities Expenses</td>
+        <td class="input-cell"><div class="subtotal-display" id="u-total">$0.00</div></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     STEP 5 — Food & Household (C)
+════════════════════════════════════════════════ -->
+<div class="section-card" id="step-5">
+  <div class="section-header">
+    <div class="step-label">Step 5 of 13</div>
+    <h2>C. Food &amp; Household Expenses</h2>
+    <p>Enter your monthly food and household supply costs.</p>
+  </div>
+  <div class="section-body">
+    <table class="expense-table">
+      <tr>
+        <td class="label-cell">
+          <div class="people-row">
+            Groceries for
+            <input type="number" id="groceries-people" class="people-input" placeholder="#" min="1" max="20">
+            person(s)
+          </div>
+        </td>
+        <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input food" id="f1" placeholder="0" min="0" step="0.01" oninput="calcSection('food','f-total')"></div></td>
+      </tr>
+      <tr><td class="label-cell">Household supplies (cleaning, paper, pets)</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input food" id="f2" placeholder="0" min="0" step="0.01" oninput="calcSection('food','f-total')"></div></td></tr>
+      <tr><td class="label-cell">Eating out</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input food" id="f3" placeholder="0" min="0" step="0.01" oninput="calcSection('food','f-total')"></div></td></tr>
+      <tr><td class="label-cell">Other: <input type="text" class="specify-input" id="f4-label" placeholder="specify..."></td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input food" id="f4" placeholder="0" min="0" step="0.01" oninput="calcSection('food','f-total')"></div></td></tr>
+      <tr class="subtotal-row">
+        <td class="label-cell">Total Food &amp; Household Expenses</td>
+        <td class="input-cell"><div class="subtotal-display" id="f-total">$0.00</div></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     STEP 6 — Children's (D)
+════════════════════════════════════════════════ -->
+<div class="section-card" id="step-6">
+  <div class="section-header">
+    <div class="step-label">Step 6 of 13</div>
+    <h2>D. Children's Expenses</h2>
+    <p>Enter monthly expenses for your dependent children. Base these on the parenting plan or schedule you expect to have.</p>
+  </div>
+  <div class="section-body">
+    <table class="expense-table">
+      <tr><td class="label-cell">Childcare, babysitting</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input children" id="c1" placeholder="0" min="0" step="0.01" oninput="calcSection('children','c-total')"></div></td></tr>
+      <tr><td class="label-cell">Clothes, diapers</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input children" id="c2" placeholder="0" min="0" step="0.01" oninput="calcSection('children','c-total')"></div></td></tr>
+      <tr><td class="label-cell">Tuition, after-school programs, lessons</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input children" id="c3" placeholder="0" min="0" step="0.01" oninput="calcSection('children','c-total')"></div></td></tr>
+      <tr><td class="label-cell">Other expenses for children</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input children" id="c4" placeholder="0" min="0" step="0.01" oninput="calcSection('children','c-total')"></div></td></tr>
+      <tr class="subtotal-row">
+        <td class="label-cell">Total Children's Expenses</td>
+        <td class="input-cell"><div class="subtotal-display" id="c-total">$0.00</div></td>
+      </tr>
+    </table>
+    <p style="font-size:12px;color:#7a8a99;margin-top:12px;">If you have no dependent children, leave all fields at 0 and continue.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     STEP 7 — Health Care (E)
+════════════════════════════════════════════════ -->
+<div class="section-card" id="step-7">
+  <div class="section-header">
+    <div class="step-label">Step 7 of 13</div>
+    <h2>E. Health Care Expenses</h2>
+    <p>Enter monthly health care costs, including insurance premiums and out-of-pocket expenses.</p>
+  </div>
+  <div class="section-body">
+    <table class="expense-table">
+      <tr><td class="label-cell">Insurance premium (health, vision, dental)</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input health" id="e1" placeholder="0" min="0" step="0.01" oninput="calcSection('health','e-total')"></div></td></tr>
+      <tr><td class="label-cell">Health, vision, dental, orthodontia, mental health — not covered by insurance</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input health" id="e2" placeholder="0" min="0" step="0.01" oninput="calcSection('health','e-total')"></div></td></tr>
+      <tr><td class="label-cell">Other health expenses not covered by insurance</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input health" id="e3" placeholder="0" min="0" step="0.01" oninput="calcSection('health','e-total')"></div></td></tr>
+      <tr class="subtotal-row">
+        <td class="label-cell">Total Health Care Expenses</td>
+        <td class="input-cell"><div class="subtotal-display" id="e-total">$0.00</div></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     STEP 8 — Transportation (F)
+════════════════════════════════════════════════ -->
+<div class="section-card" id="step-8">
+  <div class="section-header">
+    <div class="step-label">Step 8 of 13</div>
+    <h2>F. Transportation Expenses</h2>
+    <p>Enter your monthly transportation costs.</p>
+  </div>
+  <div class="section-body">
+    <table class="expense-table">
+      <tr><td class="label-cell">Automobile payment (loan or lease)</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input transport" id="t1" placeholder="0" min="0" step="0.01" oninput="calcSection('transport','t-total')"></div></td></tr>
+      <tr><td class="label-cell">Auto insurance, license, registration</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input transport" id="t2" placeholder="0" min="0" step="0.01" oninput="calcSection('transport','t-total')"></div></td></tr>
+      <tr><td class="label-cell">Gas and auto maintenance</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input transport" id="t3" placeholder="0" min="0" step="0.01" oninput="calcSection('transport','t-total')"></div></td></tr>
+      <tr><td class="label-cell">Parking, tolls, public transportation</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input transport" id="t4" placeholder="0" min="0" step="0.01" oninput="calcSection('transport','t-total')"></div></td></tr>
+      <tr><td class="label-cell">Other: <input type="text" class="specify-input" id="t5-label" placeholder="specify..."></td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input transport" id="t5" placeholder="0" min="0" step="0.01" oninput="calcSection('transport','t-total')"></div></td></tr>
+      <tr class="subtotal-row">
+        <td class="label-cell">Total Transportation Expenses</td>
+        <td class="input-cell"><div class="subtotal-display" id="t-total">$0.00</div></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     STEP 9 — Personal (G)
+════════════════════════════════════════════════ -->
+<div class="section-card" id="step-9">
+  <div class="section-header">
+    <div class="step-label">Step 9 of 13</div>
+    <h2>G. Personal Expenses</h2>
+    <p>Enter your own personal expenses — not children's expenses.</p>
+  </div>
+  <div class="section-body">
+    <table class="expense-table">
+      <tr><td class="label-cell">Clothes</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input personal" id="p1" placeholder="0" min="0" step="0.01" oninput="calcSection('personal','p-total')"></div></td></tr>
+      <tr><td class="label-cell">Hair care, personal care</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input personal" id="p2" placeholder="0" min="0" step="0.01" oninput="calcSection('personal','p-total')"></div></td></tr>
+      <tr><td class="label-cell">Recreation, clubs, gifts</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input personal" id="p3" placeholder="0" min="0" step="0.01" oninput="calcSection('personal','p-total')"></div></td></tr>
+      <tr><td class="label-cell">Education, books, magazines</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input personal" id="p4" placeholder="0" min="0" step="0.01" oninput="calcSection('personal','p-total')"></div></td></tr>
+      <tr><td class="label-cell">Other: <input type="text" class="specify-input" id="p5-label" placeholder="specify..."></td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input personal" id="p5" placeholder="0" min="0" step="0.01" oninput="calcSection('personal','p-total')"></div></td></tr>
+      <tr class="subtotal-row">
+        <td class="label-cell">Total Personal Expenses</td>
+        <td class="input-cell"><div class="subtotal-display" id="p-total">$0.00</div></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     STEP 10 — Other (H)
+════════════════════════════════════════════════ -->
+<div class="section-card" id="step-10">
+  <div class="section-header">
+    <div class="step-label">Step 10 of 13</div>
+    <h2>H. Other Expenses</h2>
+    <p>Enter any additional monthly expenses not captured in the categories above.</p>
+  </div>
+  <div class="section-body">
+    <table class="expense-table">
+      <tr><td class="label-cell">Life insurance (not deducted from pay)</td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input other" id="o1" placeholder="0" min="0" step="0.01" oninput="calcSection('other','o-total')"></div></td></tr>
+      <tr><td class="label-cell">Other: <input type="text" class="specify-input" id="o2-label" placeholder="specify..."></td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input other" id="o2" placeholder="0" min="0" step="0.01" oninput="calcSection('other','o-total')"></div></td></tr>
+      <tr><td class="label-cell">Other: <input type="text" class="specify-input" id="o3-label" placeholder="specify..."></td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input other" id="o3" placeholder="0" min="0" step="0.01" oninput="calcSection('other','o-total')"></div></td></tr>
+      <tr><td class="label-cell">Other: <input type="text" class="specify-input" id="o4-label" placeholder="specify..."></td>
+          <td class="input-cell"><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="exp-input other" id="o4" placeholder="0" min="0" step="0.01" oninput="calcSection('other','o-total')"></div></td></tr>
+      <tr class="subtotal-row">
+        <td class="label-cell">Total Other Expenses</td>
+        <td class="input-cell"><div class="subtotal-display" id="o-total">$0.00</div></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     STEP 11 — Debts Included in Expenses
+════════════════════════════════════════════════ -->
+<div class="section-card" id="step-11">
+  <div class="section-header">
+    <div class="step-label">Step 11 of 13</div>
+    <h2>Debts Included in Monthly Expenses</h2>
+    <p>List debts whose payments you already included in the expenses above — for example, your mortgage payment listed under Housing, or a car loan listed under Transportation.</p>
+  </div>
+  <div class="section-body">
+    <table class="debt-table">
+      <thead>
+        <tr>
+          <th style="width:26%">Debt / Expense Type</th>
+          <th style="width:28%">Creditor Name</th>
+          <th style="width:22%">Amount Owed Now</th>
+          <th style="width:24%">Last Payment Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="text" id="di1-type" placeholder="e.g., Mortgage"></td>
+          <td><input type="text" id="di1-cred" placeholder="Creditor name"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="di1-amt" placeholder="0" min="0" step="0.01"></div></td>
+          <td><input type="text" id="di1-date" placeholder="MM/YYYY"></td>
+        </tr>
+        <tr>
+          <td><input type="text" id="di2-type" placeholder="e.g., Car loan"></td>
+          <td><input type="text" id="di2-cred" placeholder="Creditor name"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="di2-amt" placeholder="0" min="0" step="0.01"></div></td>
+          <td><input type="text" id="di2-date" placeholder="MM/YYYY"></td>
+        </tr>
+        <tr>
+          <td><input type="text" id="di3-type" placeholder="e.g., Home equity line"></td>
+          <td><input type="text" id="di3-cred" placeholder="Creditor name"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="di3-amt" placeholder="0" min="0" step="0.01"></div></td>
+          <td><input type="text" id="di3-date" placeholder="MM/YYYY"></td>
+        </tr>
+        <tr>
+          <td><input type="text" id="di4-type" placeholder="Debt type"></td>
+          <td><input type="text" id="di4-cred" placeholder="Creditor name"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="di4-amt" placeholder="0" min="0" step="0.01"></div></td>
+          <td><input type="text" id="di4-date" placeholder="MM/YYYY"></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px;color:#7a8a99;margin-top:12px;">Leave rows blank if they do not apply.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     STEP 12 — Other Monthly Debts
+════════════════════════════════════════════════ -->
+<div class="section-card" id="step-12">
+  <div class="section-header">
+    <div class="step-label">Step 12 of 13</div>
+    <h2>Other Monthly Debt Payments</h2>
+    <p>List debts whose monthly payments are NOT already included in your expenses above — for example, credit cards, student loans, personal loans.</p>
+  </div>
+  <div class="section-body">
+    <table class="debt-table">
+      <thead>
+        <tr>
+          <th style="width:22%">Debt Type</th>
+          <th style="width:24%">Creditor Name</th>
+          <th style="width:18%">Amount Owed</th>
+          <th style="width:16%">Last Pmt Date</th>
+          <th style="width:20%">Monthly Payment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="text" id="do1-type" placeholder="e.g., Credit card"></td>
+          <td><input type="text" id="do1-cred" placeholder="Creditor name"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="do1-amt"  placeholder="0" min="0" step="0.01"></div></td>
+          <td><input type="text" id="do1-date" placeholder="MM/YYYY"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="other-debt-pmt" id="do1-pmt"  placeholder="0" min="0" step="0.01" oninput="calcOtherDebts()"></div></td>
+        </tr>
+        <tr>
+          <td><input type="text" id="do2-type" placeholder="e.g., Student loan"></td>
+          <td><input type="text" id="do2-cred" placeholder="Creditor name"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="do2-amt"  placeholder="0" min="0" step="0.01"></div></td>
+          <td><input type="text" id="do2-date" placeholder="MM/YYYY"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="other-debt-pmt" id="do2-pmt"  placeholder="0" min="0" step="0.01" oninput="calcOtherDebts()"></div></td>
+        </tr>
+        <tr>
+          <td><input type="text" id="do3-type" placeholder="e.g., Personal loan"></td>
+          <td><input type="text" id="do3-cred" placeholder="Creditor name"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="do3-amt"  placeholder="0" min="0" step="0.01"></div></td>
+          <td><input type="text" id="do3-date" placeholder="MM/YYYY"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="other-debt-pmt" id="do3-pmt"  placeholder="0" min="0" step="0.01" oninput="calcOtherDebts()"></div></td>
+        </tr>
+        <tr>
+          <td><input type="text" id="do4-type" placeholder="Debt type"></td>
+          <td><input type="text" id="do4-cred" placeholder="Creditor name"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="do4-amt"  placeholder="0" min="0" step="0.01"></div></td>
+          <td><input type="text" id="do4-date" placeholder="MM/YYYY"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="other-debt-pmt" id="do4-pmt"  placeholder="0" min="0" step="0.01" oninput="calcOtherDebts()"></div></td>
+        </tr>
+        <tr>
+          <td><input type="text" id="do5-type" placeholder="Debt type"></td>
+          <td><input type="text" id="do5-cred" placeholder="Creditor name"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="do5-amt"  placeholder="0" min="0" step="0.01"></div></td>
+          <td><input type="text" id="do5-date" placeholder="MM/YYYY"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="other-debt-pmt" id="do5-pmt"  placeholder="0" min="0" step="0.01" oninput="calcOtherDebts()"></div></td>
+        </tr>
+        <tr>
+          <td><input type="text" id="do6-type" placeholder="Debt type"></td>
+          <td><input type="text" id="do6-cred" placeholder="Creditor name"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" id="do6-amt"  placeholder="0" min="0" step="0.01"></div></td>
+          <td><input type="text" id="do6-date" placeholder="MM/YYYY"></td>
+          <td><div class="dollar-input-wrap"><span class="dollar-sign">$</span><input type="number" class="other-debt-pmt" id="do6-pmt"  placeholder="0" min="0" step="0.01" oninput="calcOtherDebts()"></div></td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" style="text-align:right;color:#1e3a5f;">Total Monthly Payments for Other Debts</td>
+          <td><div class="debt-total-display" id="other-debt-total">$0.00</div></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     STEP 13 — Review & Generate
+════════════════════════════════════════════════ -->
+<div class="section-card" id="step-13">
+  <div class="section-header">
+    <div class="step-label">Step 13 of 13</div>
+    <h2>Review &amp; Generate Document</h2>
+    <p>Review your calculated totals below. When everything looks correct, click "Generate Document" to produce your completed financial declaration.</p>
+  </div>
+  <div class="section-body">
+    <div class="review-section">
+      <h3>Available Assets</h3>
+      <div class="review-row"><span class="rl">Total Available Liquid Assets</span><span class="rv" id="rev-assets">$0.00</span></div>
+    </div>
+    <div class="review-section">
+      <h3>Monthly Expenses After Separation</h3>
+      <div class="review-row"><span class="rl">A. Housing</span><span class="rv" id="rev-housing">$0.00</span></div>
+      <div class="review-row"><span class="rl">B. Utilities</span><span class="rv" id="rev-utilities">$0.00</span></div>
+      <div class="review-row"><span class="rl">C. Food &amp; Household</span><span class="rv" id="rev-food">$0.00</span></div>
+      <div class="review-row"><span class="rl">D. Children's Expenses</span><span class="rv" id="rev-children">$0.00</span></div>
+      <div class="review-row"><span class="rl">E. Health Care</span><span class="rv" id="rev-health">$0.00</span></div>
+      <div class="review-row"><span class="rl">F. Transportation</span><span class="rv" id="rev-transport">$0.00</span></div>
+      <div class="review-row"><span class="rl">G. Personal Expenses</span><span class="rv" id="rev-personal">$0.00</span></div>
+      <div class="review-row"><span class="rl">H. Other Expenses</span><span class="rv" id="rev-other">$0.00</span></div>
+      <div class="review-total-row">
+        <span>Total Monthly Expenses</span>
+        <span id="rev-total-exp">$0.00</span>
+      </div>
+    </div>
+    <div class="review-section">
+      <h3>Other Monthly Debt Payments</h3>
+      <div class="review-row"><span class="rl">Total monthly debt payments not included in expenses</span><span class="rv" id="rev-debts">$0.00</span></div>
+    </div>
+    <div class="grand-total-box">
+      <span class="gt-label">Grand Total<br><span style="font-weight:400;font-size:11px;opacity:0.8">Monthly Expenses + Other Debt Payments</span></span>
+      <span class="gt-amount" id="rev-grand-total">$0.00</span>
+    </div>
+    <p class="disclaimer-note">By generating this document, you confirm that the information provided is accurate and complete to the best of your knowledge. This document will be reviewed by your attorney at Dellino Family Law Group.</p>
+  </div>
+</div>
+
+</div><!-- /.main -->
+
+<!-- ══════════════════════════════════════════════
+     NAV BAR
+════════════════════════════════════════════════ -->
+<div class="nav-bar">
+  <button class="btn btn-secondary" id="btn-back" onclick="navigate(-1)" style="visibility:hidden">&#8592; Back</button>
+  <span class="step-info" id="nav-step-info">Step 1 of 13</span>
+  <button class="btn btn-primary" id="btn-next" onclick="navigate(1)">Next &#8594;</button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PRINT OUTPUT (hidden until Generate)
+════════════════════════════════════════════════ -->
+<div id="print-output">
+  <div id="print-doc-content"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ── State ──────────────────────────────────────
+let currentStep = 1;
+const TOTAL_STEPS = 13;
+
+// ── Navigation ─────────────────────────────────
+function navigate(dir) {
+  if (dir === 1 && currentStep === TOTAL_STEPS) {
+    generateAndPrint();
+    return;
+  }
+  const next = currentStep + dir;
+  if (next < 1 || next > TOTAL_STEPS) return;
+  document.getElementById('step-' + currentStep).classList.remove('active');
+  currentStep = next;
+  document.getElementById('step-' + currentStep).classList.add('active');
+  updateNav();
+  updateProgress();
+  if (currentStep === TOTAL_STEPS) updateReview();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateNav() {
+  document.getElementById('btn-back').style.visibility = currentStep > 1 ? 'visible' : 'hidden';
+  document.getElementById('nav-step-info').textContent = 'Step ' + currentStep + ' of ' + TOTAL_STEPS;
+  const nextBtn = document.getElementById('btn-next');
+  if (currentStep === TOTAL_STEPS) {
+    nextBtn.textContent = 'Generate Document';
+    nextBtn.className   = 'btn btn-generate';
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.className   = 'btn btn-primary';
+  }
+}
+
+function updateProgress() {
+  const pct = Math.round((currentStep / TOTAL_STEPS) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-step-label').textContent = 'Step ' + currentStep + ' of ' + TOTAL_STEPS;
+  document.getElementById('progress-pct-label').textContent  = pct + '%';
+}
+
+// ── Conditional work-status fields ─────────────
+function toggleWorkStatus() {
+  const val = (document.querySelector('input[name="working"]:checked') || {}).value;
+  document.getElementById('working-yes').className = 'conditional' + (val === 'yes' ? ' visible' : '');
+  document.getElementById('working-no').className  = 'conditional' + (val === 'no'  ? ' visible' : '');
+}
+
+// ── Math helpers ───────────────────────────────
+function n(id) { return parseFloat((document.getElementById(id) || {}).value) || 0; }
+
+function fmt(num) {
+  return '$' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function calcAssets() {
+  const total = n('asset-cash') + n('asset-stocks') + n('asset-life') + n('asset-other');
+  document.getElementById('asset-total').textContent = fmt(total);
+}
+
+function calcSection(cls, totalId) {
+  let total = 0;
+  document.querySelectorAll('.exp-input.' + cls).forEach(function(el) {
+    total += parseFloat(el.value) || 0;
+  });
+  document.getElementById(totalId).textContent = fmt(total);
+}
+
+function calcOtherDebts() {
+  let total = 0;
+  document.querySelectorAll('.other-debt-pmt').forEach(function(el) {
+    total += parseFloat(el.value) || 0;
+  });
+  document.getElementById('other-debt-total').textContent = fmt(total);
+}
+
+function subtotal(cls) {
+  let t = 0;
+  document.querySelectorAll('.exp-input.' + cls).forEach(function(el) { t += parseFloat(el.value) || 0; });
+  return t;
+}
+
+function otherDebtTotal() {
+  let t = 0;
+  document.querySelectorAll('.other-debt-pmt').forEach(function(el) { t += parseFloat(el.value) || 0; });
+  return t;
+}
+
+// ── Review page update ──────────────────────────
+function updateReview() {
+  const assetTot = n('asset-cash') + n('asset-stocks') + n('asset-life') + n('asset-other');
+  const h = subtotal('housing'),   u = subtotal('utilities'), f = subtotal('food'),
+            c = subtotal('children'), e = subtotal('health'), t = subtotal('transport'),
+            p = subtotal('personal'), o = subtotal('other');
+  const totalExp = h + u + f + c + e + t + p + o;
+  const debts    = otherDebtTotal();
+  const grand    = totalExp + debts;
+
+  document.getElementById('rev-assets').textContent    = fmt(assetTot);
+  document.getElementById('rev-housing').textContent   = fmt(h);
+  document.getElementById('rev-utilities').textContent = fmt(u);
+  document.getElementById('rev-food').textContent      = fmt(f);
+  document.getElementById('rev-children').textContent  = fmt(c);
+  document.getElementById('rev-health').textContent    = fmt(e);
+  document.getElementById('rev-transport').textContent = fmt(t);
+  document.getElementById('rev-personal').textContent  = fmt(p);
+  document.getElementById('rev-other').textContent     = fmt(o);
+  document.getElementById('rev-total-exp').textContent = fmt(totalExp);
+  document.getElementById('rev-debts').textContent     = fmt(debts);
+  document.getElementById('rev-grand-total').textContent = fmt(grand);
+}
+
+// ── Generate & Print ────────────────────────────
+function v(id) {
+  var el = document.getElementById(id);
+  return el ? (el.value || '').trim() || '—' : '—';
+}
+
+function generateAndPrint() {
+  // ── Personal Info ──
+  const name      = v('pi-name');
+  const education = v('pi-education');
+  const profession = v('pi-profession');
+  const working    = (document.querySelector('input[name="working"]:checked') || {}).value;
+  const workingStr = working === 'yes' ? 'Yes' : working === 'no' ? 'No' : '—';
+  const hiredDate  = v('pi-hired');
+  const lastWorked = v('pi-last-worked');
+  const notWorkReason = v('pi-not-working-reason');
+  const monthlyPay = working === 'yes' ? n('pi-pay') : n('pi-pay-last');
+  const grocPeople = v('groceries-people');
+
+  // ── Assets ──
+  const aCash = n('asset-cash'), aStk = n('asset-stocks'), aLife = n('asset-life'), aOth = n('asset-other');
+  const aTot  = aCash + aStk + aLife + aOth;
+
+  // ── Expense arrays ──
+  const hArr = [n('h1'),n('h2'),n('h3'),n('h4'),n('h5')];
+  const uArr = [n('u1'),n('u2'),n('u3'),n('u4'),n('u5')];
+  const fArr = [n('f1'),n('f2'),n('f3'),n('f4')];
+  const cArr = [n('c1'),n('c2'),n('c3'),n('c4')];
+  const eArr = [n('e1'),n('e2'),n('e3')];
+  const tArr = [n('t1'),n('t2'),n('t3'),n('t4'),n('t5')];
+  const pArr = [n('p1'),n('p2'),n('p3'),n('p4'),n('p5')];
+  const oArr = [n('o1'),n('o2'),n('o3'),n('o4')];
+  const sumArr = function(a){ return a.reduce(function(s,x){return s+x;},0); };
+  const hT=sumArr(hArr), uT=sumArr(uArr), fT=sumArr(fArr), cT=sumArr(cArr),
+        eT=sumArr(eArr), tT=sumArr(tArr), pT=sumArr(pArr), oT=sumArr(oArr);
+  const totalExp = hT+uT+fT+cT+eT+tT+pT+oT;
+
+  // Specify labels
+  const uL5 = v('u5-label'), fL4 = v('f4-label'), tL5 = v('t5-label');
+  const pL5 = v('p5-label'), oL2 = v('o2-label'), oL3 = v('o3-label'), oL4 = v('o4-label');
+
+  // ── Debt helpers ──
+  function getDebtIn(i) {
+    var tp = v('di'+i+'-type'), cr = v('di'+i+'-cred'),
+        am = n('di'+i+'-amt'), dt = v('di'+i+'-date');
+    if (tp==='—' && cr==='—' && am===0) return null;
+    return { tp:tp, cr:cr, am:am, dt:dt };
+  }
+  function getDebtOut(i) {
+    var tp = v('do'+i+'-type'), cr = v('do'+i+'-cred'),
+        am = n('do'+i+'-amt'), dt = v('do'+i+'-date'), pm = n('do'+i+'-pmt');
+    if (tp==='—' && cr==='—' && am===0 && pm===0) return null;
+    return { tp:tp, cr:cr, am:am, dt:dt, pm:pm };
+  }
+
+  var debtsIn  = [1,2,3,4].map(getDebtIn).filter(Boolean);
+  var debtsOut = [1,2,3,4,5,6].map(getDebtOut).filter(Boolean);
+  var totalOtherDebt = debtsOut.reduce(function(s,r){return s+r.pm;}, 0);
+  var grandTotal = totalExp + totalOtherDebt;
+
+  var today = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+
+  // ── Build HTML ──
+  var debtInRows = debtsIn.length > 0 ?
+    debtsIn.map(function(r){
+      return '<tr><td>'+r.tp+'</td><td>'+r.cr+'</td><td class="amt">'+fmt(r.am)+'</td><td>'+r.dt+'</td></tr>';
+    }).join('') : '<tr><td colspan="4" style="color:#888;font-style:italic">None listed</td></tr>';
+
+  var debtOutRows = debtsOut.length > 0 ?
+    debtsOut.map(function(r){
+      return '<tr><td>'+r.tp+'</td><td>'+r.cr+'</td><td class="amt">'+fmt(r.am)+'</td><td>'+r.dt+'</td><td class="amt">'+fmt(r.pm)+'</td></tr>';
+    }).join('') : '<tr><td colspan="5" style="color:#888;font-style:italic">None listed</td></tr>';
+
+  var employRow = working === 'yes'
+    ? '<tr><td><strong>Date Hired:</strong></td><td>'+hiredDate+'</td></tr>'
+    : '<tr><td><strong>Last Date Worked:</strong></td><td>'+lastWorked+'</td></tr>'
+      + '<tr><td><strong>Reason Not Working:</strong></td><td>'+notWorkReason+'</td></tr>';
+
+  var html = '<div class="print-doc">'
+    + '<div class="print-doc-header">'
+    +   '<h1>Financial Declaration &mdash; Monthly Expenses and Income</h1>'
+    +   '<div class="sub">Washington State Superior Court &nbsp;&bull;&nbsp; Prepared for Dellino Family Law Group &nbsp;&bull;&nbsp; ' + today + '</div>'
+    + '</div>'
+
+    // Section 1
+    + '<div class="print-section"><h2>1. Personal Information</h2>'
+    +   '<table class="print-table" style="width:100%">'
+    +     '<tr><td style="width:38%"><strong>Name:</strong></td><td>'+name+'</td></tr>'
+    +     '<tr><td><strong>Education:</strong></td><td>'+education+'</td></tr>'
+    +     '<tr><td><strong>Job / Profession:</strong></td><td>'+profession+'</td></tr>'
+    +     '<tr><td><strong>Currently Working:</strong></td><td>'+workingStr+'</td></tr>'
+    +     employRow
+    +     '<tr><td><strong>Monthly Pay Before Taxes:</strong></td><td>'+fmt(monthlyPay)+'</td></tr>'
+    +   '</table>'
+    + '</div>'
+
+    // Section 2
+    + '<div class="print-section"><h2>2. Available Assets (Liquid)</h2>'
+    +   '<table class="print-table"><tbody>'
+    +     '<tr><td>Cash on hand / checking &amp; savings accounts</td><td class="amt">'+fmt(aCash)+'</td></tr>'
+    +     '<tr><td>Stocks, bonds, CDs, other liquid financial accounts</td><td class="amt">'+fmt(aStk)+'</td></tr>'
+    +     '<tr><td>Cash value of life insurance</td><td class="amt">'+fmt(aLife)+'</td></tr>'
+    +     '<tr><td>Other liquid assets</td><td class="amt">'+fmt(aOth)+'</td></tr>'
+    +     '<tr class="total-row"><td><strong>Total Available Assets</strong></td><td class="amt"><strong>'+fmt(aTot)+'</strong></td></tr>'
+    +   '</tbody></table>'
+    + '</div>'
+
+    // Section 3 — Expenses
+    + '<div class="print-section"><h2>3. Monthly Expenses After Separation</h2>'
+    +   '<table class="print-table">'
+    +     '<thead><tr><th>Category</th><th>Line Item</th><th class="amt">Amount</th></tr></thead>'
+    +     '<tbody>'
+    +       makeExpRows('A. Housing',     ['Rent / Mortgage Payment','Property Tax (if not in monthly payment)','Homeowner\'s or Rental Insurance','Other mortgage / equity-based debt payments','HOA dues or fees'], hArr, hT)
+    +       makeExpRows('B. Utilities',   ['Electricity and heating (gas and oil)','Water, sewer, garbage','Telephone(s)','Cable, Internet', uL5!=='—'?uL5:'Other'], uArr, uT)
+    +       makeExpRows('C. Food &amp; Household', ['Groceries ('+grocPeople+' person(s))','Household supplies','Eating out', fL4!=='—'?fL4:'Other'], fArr, fT)
+    +       makeExpRows('D. Children\'s', ['Childcare, babysitting','Clothes, diapers','Tuition, after-school, lessons','Other children\'s expenses'], cArr, cT)
+    +       makeExpRows('E. Health Care', ['Insurance premiums (health, vision, dental)','Out-of-pocket: health, vision, dental, mental health','Other health expenses not covered'], eArr, eT)
+    +       makeExpRows('F. Transportation', ['Automobile payment (loan or lease)','Auto insurance, license, registration','Gas and auto maintenance','Parking, tolls, public transportation', tL5!=='—'?tL5:'Other'], tArr, tT)
+    +       makeExpRows('G. Personal',    ['Clothes','Hair care, personal care','Recreation, clubs, gifts','Education, books, magazines', pL5!=='—'?pL5:'Other personal'], pArr, pT)
+    +       makeExpRows('H. Other',       ['Life insurance (not deducted from pay)', oL2!=='—'?oL2:'Other', oL3!=='—'?oL3:'Other', oL4!=='—'?oL4:'Other'], oArr, oT)
+    +     '</tbody>'
+    +     '<tfoot><tr class="grand-row"><td colspan="2"><strong>TOTAL MONTHLY EXPENSES</strong></td><td class="amt"><strong>'+fmt(totalExp)+'</strong></td></tr></tfoot>'
+    +   '</table>'
+    + '</div>'
+
+    // Section 4 — Debts in expenses
+    + '<div class="print-section"><h2>4. Debts Included in Monthly Expenses</h2>'
+    +   '<table class="print-table"><thead><tr><th>Debt / Expense Type</th><th>Creditor</th><th>Amount Owed</th><th>Last Pmt Date</th></tr></thead>'
+    +   '<tbody>'+debtInRows+'</tbody></table>'
+    + '</div>'
+
+    // Section 5 — Other debts
+    + '<div class="print-section"><h2>5. Other Monthly Debt Payments (Not Included in Expenses Above)</h2>'
+    +   '<table class="print-table"><thead><tr><th>Debt Type</th><th>Creditor</th><th>Amount Owed</th><th>Last Pmt Date</th><th>Monthly Payment</th></tr></thead>'
+    +   '<tbody>'+debtOutRows+'</tbody>'
+    +   '<tfoot><tr class="total-row"><td colspan="4" style="text-align:right"><strong>Total Monthly Debt Payments</strong></td><td class="amt"><strong>'+fmt(totalOtherDebt)+'</strong></td></tr></tfoot>'
+    +   '</table>'
+    + '</div>'
+
+    // Grand total
+    + '<div class="print-grand-total">'
+    +   '<span>GRAND TOTAL &mdash; Monthly Expenses + Other Debt Payments</span>'
+    +   '<span>'+fmt(grandTotal)+'</span>'
+    + '</div>'
+
+    // Signature
+    + '<div class="print-signature">'
+    +   '<p>I declare under penalty of perjury under the laws of the State of Washington that the foregoing is true and correct to the best of my knowledge and belief.</p>'
+    +   '<br>'
+    +   '<table style="width:100%;font-size:10pt;border:none"><tr>'
+    +     '<td style="width:55%;border:none;padding-top:24pt">Signature: ___________________________________<br><br>Printed Name: '+(name!=='—'?name:'______________________________')+'</td>'
+    +     '<td style="border:none;padding-top:24pt">Date: ___________________</td>'
+    +   '</tr></table>'
+    + '</div>'
+    + '</div>';
+
+  document.getElementById('print-doc-content').innerHTML = html;
+
+  // ── Switch view ──
+  document.querySelector('.header').style.display              = 'none';
+  document.querySelector('.progress-bar-container').style.display = 'none';
+  document.querySelector('.main').style.display                 = 'none';
+  document.querySelector('.nav-bar').style.display              = 'none';
+
+  var po = document.getElementById('print-output');
+  po.style.cssText = 'display:block;max-width:860px;margin:0 auto;padding:28px 32px;font-family:Times New Roman,Times,serif;';
+
+  // Controls
+  var ctrl = document.createElement('div');
+  ctrl.className = 'print-controls';
+  ctrl.style.cssText = 'display:flex;gap:12px;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #1e3a5f;';
+  ctrl.innerHTML =
+    '<button onclick="window.print()" style="padding:10px 22px;background:#1e3a5f;color:white;border:none;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;">&#128438;&nbsp; Print / Save as PDF</button>'
+    + '<button onclick="buildXLSX()" style="padding:10px 22px;background:#1a7a4a;color:white;border:none;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;">&#128202;&nbsp; Download Spreadsheet (.xlsx)</button>'
+    + '<button onclick="location.reload()" style="padding:10px 18px;background:#e8edf3;color:#3a4a5c;border:none;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;">&#8592; Edit Answers</button>'
+    + '<span style="font-size:12px;color:#7a8a99;margin-left:4px;display:block;margin-top:8px;">Print dialog: choose &ldquo;Save as PDF&rdquo; for the signature copy. Spreadsheet downloads immediately.</span>';
+  po.insertBefore(ctrl, po.firstChild);
+}
+
+// ── Helper: build expense rows for print table ──
+function makeExpRows(catLabel, labels, vals, total) {
+  var rows = '';
+  labels.forEach(function(lbl, i) {
+    if (i === 0) {
+      rows += '<tr><td rowspan="'+(labels.length+1)+'"><strong>'+catLabel+'</strong></td><td>'+lbl+'</td><td class="amt">'+fmt(vals[i]||0)+'</td></tr>';
+    } else {
+      rows += '<tr><td>'+lbl+'</td><td class="amt">'+fmt(vals[i]||0)+'</td></tr>';
+    }
+  });
+  rows += '<tr class="total-row"><td><strong>Total '+catLabel+'</strong></td><td class="amt"><strong>'+fmt(total)+'</strong></td></tr>';
+  return rows;
+}
+
+// ── XLSX Workbook Generator ─────────────────────
+function buildXLSX() {
+  if (typeof XLSX === 'undefined') {
+    alert('Spreadsheet library not loaded. Please check your internet connection and try again.');
+    return;
+  }
+
+  var wb   = XLSX.utils.book_new();
+  var today = new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
+
+  // Convenience: number cell with dollar format
+  function dc(val) { return { v: (parseFloat(val)||0), t: 'n', z: '"$"#,##0.00' }; }
+  // Plain text cell
+  function tc(val) { return { v: (val||''), t: 's' }; }
+  // Blank cell
+  var BL = { v: '', t: 's' };
+
+  // Pre-compute everything
+  var clientName  = v('pi-name');
+  var working     = (document.querySelector('input[name="working"]:checked')||{}).value;
+  var workingStr  = working==='yes' ? 'Yes' : working==='no' ? 'No' : '';
+  var monthlyPay  = working==='yes' ? n('pi-pay') : n('pi-pay-last');
+  var grocPeople  = v('groceries-people');
+
+  var aCash=n('asset-cash'), aStk=n('asset-stocks'), aLife=n('asset-life'), aOth=n('asset-other');
+  var aTot = aCash+aStk+aLife+aOth;
+
+  var hVals=[n('h1'),n('h2'),n('h3'),n('h4'),n('h5')];
+  var uVals=[n('u1'),n('u2'),n('u3'),n('u4'),n('u5')];
+  var fVals=[n('f1'),n('f2'),n('f3'),n('f4')];
+  var cVals=[n('c1'),n('c2'),n('c3'),n('c4')];
+  var eVals=[n('e1'),n('e2'),n('e3')];
+  var tVals=[n('t1'),n('t2'),n('t3'),n('t4'),n('t5')];
+  var pVals=[n('p1'),n('p2'),n('p3'),n('p4'),n('p5')];
+  var oVals=[n('o1'),n('o2'),n('o3'),n('o4')];
+  var sa = function(a){ return a.reduce(function(s,x){return s+x;},0); };
+  var hT=sa(hVals), uT=sa(uVals), fT=sa(fVals), cT=sa(cVals),
+      eT=sa(eVals), tT=sa(tVals), pT=sa(pVals), oT=sa(oVals);
+  var totalExp = hT+uT+fT+cT+eT+tT+pT+oT;
+  var debtPmtTot = otherDebtTotal();
+  var grand = totalExp + debtPmtTot;
+
+  var uL5=v('u5-label'), fL4=v('f4-label'), tL5=v('t5-label');
+  var pL5=v('p5-label'), oL2=v('o2-label'), oL3=v('o3-label'), oL4=v('o4-label');
+  var label = function(lbl, fallback){ return (lbl && lbl!=='—') ? lbl : fallback; };
+
+  // ── Helper: set column widths ──
+  function cols(arr) { return arr.map(function(w){ return {wch:w}; }); }
+
+  // ══════════════════════════════════════════════
+  // SHEET 1: Summary
+  // ══════════════════════════════════════════════
+  var sumRows = [
+    ['FINANCIAL DECLARATION — MONTHLY EXPENSES SUMMARY', '', '', '', ''],
+    ['Client:', clientName, '', 'Date Prepared:', today],
+    ['', '', '', '', ''],
+    ['SECTION', '', '', '', 'MONTHLY TOTAL'],
+    ['Available Assets (Liquid)', '', '', '', aTot],
+    ['', '', '', '', ''],
+    ['Monthly Expenses After Separation', '', '', '', ''],
+    ['  A.  Housing', '', '', '', hT],
+    ['  B.  Utilities', '', '', '', uT],
+    ['  C.  Food & Household', '', '', '', fT],
+    ["  D.  Children's Expenses", '', '', '', cT],
+    ['  E.  Health Care', '', '', '', eT],
+    ['  F.  Transportation', '', '', '', tT],
+    ['  G.  Personal Expenses', '', '', '', pT],
+    ['  H.  Other Expenses', '', '', '', oT],
+    ['TOTAL MONTHLY EXPENSES', '', '', '', totalExp],
+    ['', '', '', '', ''],
+    ['Other Monthly Debt Payments (not in expenses above)', '', '', '', debtPmtTot],
+    ['', '', '', '', ''],
+    ['GRAND TOTAL  —  Monthly Expenses + Other Debt Payments', '', '', '', grand],
+  ];
+  var sumWS = XLSX.utils.aoa_to_sheet(sumRows);
+  // Apply dollar format to column E (index 4) for numeric rows
+  var sumDollarRows = [4, 7,8,9,10,11,12,13,14,15, 17, 19];
+  sumDollarRows.forEach(function(r) {
+    var cell = XLSX.utils.encode_cell({r:r, c:4});
+    if (sumWS[cell]) { sumWS[cell].t = 'n'; sumWS[cell].z = '"$"#,##0.00'; }
+  });
+  sumWS['!cols'] = cols([38, 20, 5, 16, 18]);
+  XLSX.utils.book_append_sheet(wb, sumWS, 'Summary');
+
+  // ══════════════════════════════════════════════
+  // SHEET 2: Personal Info
+  // ══════════════════════════════════════════════
+  var piRows = [
+    ['PERSONAL INFORMATION', ''],
+    ['', ''],
+    ['Field', 'Value'],
+    ['Name', clientName],
+    ['Highest Education Completed', v('pi-education')],
+    ['Job / Profession', v('pi-profession')],
+    ['Currently Working', workingStr],
+  ];
+  if (working === 'yes') {
+    piRows.push(['Date Hired (Month / Year)', v('pi-hired')]);
+    piRows.push(['Monthly Pay Before Taxes', monthlyPay]);
+  } else if (working === 'no') {
+    piRows.push(['Last Date Worked (Month / Year)', v('pi-last-worked')]);
+    piRows.push(['Most Recent Monthly Pay Before Taxes', monthlyPay]);
+    piRows.push(['Reason Not Working', v('pi-not-working-reason')]);
+  }
+  var piWS = XLSX.utils.aoa_to_sheet(piRows);
+  // Dollar format pay row
+  var payRowIdx = working==='yes' ? 8 : working==='no' ? 9 : -1;
+  if (payRowIdx > 0) {
+    var payCell = XLSX.utils.encode_cell({r:payRowIdx-1, c:1});
+    if (piWS[payCell]) { piWS[payCell].t='n'; piWS[payCell].z='"$"#,##0.00'; }
+  }
+  piWS['!cols'] = cols([36, 40]);
+  XLSX.utils.book_append_sheet(wb, piWS, 'Personal Info');
+
+  // ══════════════════════════════════════════════
+  // SHEET 3: Available Assets
+  // ══════════════════════════════════════════════
+  var assRows = [
+    ['AVAILABLE ASSETS (LIQUID)', ''],
+    ['', ''],
+    ['Asset Description', 'Amount'],
+    ['Cash on hand / checking & savings accounts', aCash],
+    ['Stocks, bonds, CDs, other liquid financial accounts', aStk],
+    ['Cash value of life insurance', aLife],
+    ['Other liquid assets', aOth],
+    ['TOTAL AVAILABLE ASSETS', aTot],
+  ];
+  var assWS = XLSX.utils.aoa_to_sheet(assRows);
+  [3,4,5,6,7].forEach(function(r){
+    var cell = XLSX.utils.encode_cell({r:r, c:1});
+    if (assWS[cell]) { assWS[cell].t='n'; assWS[cell].z='"$"#,##0.00'; }
+  });
+  assWS['!cols'] = cols([52, 18]);
+  XLSX.utils.book_append_sheet(wb, assWS, 'Available Assets');
+
+  // ══════════════════════════════════════════════
+  // SHEET 4: Monthly Expenses
+  // ══════════════════════════════════════════════
+  // Build rows: [Category, Line Item, Amount]
+  // Dollar format applied to column C (index 2) for all amount rows
+  var expRows = [
+    ['MONTHLY EXPENSES AFTER SEPARATION', '', ''],
+    ['', '', ''],
+    ['Category', 'Line Item', 'Monthly Amount'],
+    ['', '', ''],
+  ];
+  var expDollarRowIndices = [];
+
+  function pushExpSection(catLabel, lineItems, vals, secTotal) {
+    expRows.push([catLabel, '', '']);
+    lineItems.forEach(function(lbl, i) {
+      expRows.push(['', lbl, vals[i]||0]);
+      expDollarRowIndices.push(expRows.length - 1);
+    });
+    expRows.push(['', 'SUBTOTAL — ' + catLabel, secTotal]);
+    expDollarRowIndices.push(expRows.length - 1);
+    expRows.push(['', '', '']);
+  }
+
+  pushExpSection('A.  Housing Expenses',
+    ['Rent / Mortgage Payment',
+     'Property Tax (if not in monthly payment)',
+     "Homeowner's or Rental Insurance",
+     'Other mortgage / equity-based debt payments',
+     "Homeowner's Association dues or fees"],
+    hVals, hT);
+
+  pushExpSection('B.  Utilities Expenses',
+    ['Electricity and heating (gas and oil)',
+     'Water, sewer, garbage',
+     'Telephone(s)',
+     'Cable, Internet',
+     label(uL5,'Other')],
+    uVals, uT);
+
+  pushExpSection('C.  Food & Household Expenses',
+    ['Groceries (' + (grocPeople!=='—'?grocPeople:'?') + ' person(s))',
+     'Household supplies (cleaning, paper, pets)',
+     'Eating out',
+     label(fL4,'Other')],
+    fVals, fT);
+
+  pushExpSection("D.  Children's Expenses",
+    ['Childcare, babysitting',
+     'Clothes, diapers',
+     'Tuition, after-school programs, lessons',
+     'Other expenses for children'],
+    cVals, cT);
+
+  pushExpSection('E.  Health Care Expenses',
+    ['Insurance premium (health, vision, dental)',
+     'Health, vision, dental, mental health — not covered by insurance',
+     'Other health expenses not covered by insurance'],
+    eVals, eT);
+
+  pushExpSection('F.  Transportation Expenses',
+    ['Automobile payment (loan or lease)',
+     'Auto insurance, license, registration',
+     'Gas and auto maintenance',
+     'Parking, tolls, public transportation',
+     label(tL5,'Other transportation')],
+    tVals, tT);
+
+  pushExpSection('G.  Personal Expenses',
+    ['Clothes',
+     'Hair care, personal care',
+     'Recreation, clubs, gifts',
+     'Education, books, magazines',
+     label(pL5,'Other personal')],
+    pVals, pT);
+
+  pushExpSection('H.  Other Expenses',
+    ['Life insurance (not deducted from pay)',
+     label(oL2,'Other'),
+     label(oL3,'Other'),
+     label(oL4,'Other')],
+    oVals, oT);
+
+  expRows.push(['TOTAL MONTHLY EXPENSES', '', totalExp]);
+  expDollarRowIndices.push(expRows.length - 1);
+
+  var expWS = XLSX.utils.aoa_to_sheet(expRows);
+  expDollarRowIndices.forEach(function(r) {
+    var cell = XLSX.utils.encode_cell({r:r, c:2});
+    if (expWS[cell]) { expWS[cell].t='n'; expWS[cell].z='"$"#,##0.00'; }
+  });
+  expWS['!cols'] = cols([28, 54, 18]);
+  XLSX.utils.book_append_sheet(wb, expWS, 'Monthly Expenses');
+
+  // ══════════════════════════════════════════════
+  // SHEET 5: Debts
+  // ══════════════════════════════════════════════
+  var debtRows = [
+    ['DEBTS — INCLUDED IN MONTHLY EXPENSES ABOVE', '', '', ''],
+    ['', '', '', ''],
+    ['Debt / Expense Type', 'Creditor Name', 'Amount Owed Now', 'Last Payment Date'],
+  ];
+  var debtDollarCells = [];
+  for (var di=1; di<=4; di++) {
+    var dtp=v('di'+di+'-type'), dcr=v('di'+di+'-cred'), dam=n('di'+di+'-amt'), ddt=v('di'+di+'-date');
+    var rowVal = [dtp==='—'?'':dtp, dcr==='—'?'':dcr, dam, ddt==='—'?'':ddt];
+    debtRows.push(rowVal);
+    debtDollarCells.push({r: debtRows.length-1, c:2});
+  }
+  debtRows.push(['','','','']);
+  debtRows.push(['OTHER MONTHLY DEBT PAYMENTS  (not included in expenses above)', '', '', '', '']);
+  debtRows.push(['','','','','']);
+  debtRows.push(['Debt Type', 'Creditor Name', 'Amount Owed Now', 'Last Payment Date', 'Monthly Payment']);
+  for (var doi=1; doi<=6; doi++) {
+    var dtp2=v('do'+doi+'-type'), dcr2=v('do'+doi+'-cred'),
+        dam2=n('do'+doi+'-amt'), ddt2=v('do'+doi+'-date'), dpm2=n('do'+doi+'-pmt');
+    debtRows.push([dtp2==='—'?'':dtp2, dcr2==='—'?'':dcr2, dam2, ddt2==='—'?'':ddt2, dpm2]);
+    debtDollarCells.push({r:debtRows.length-1, c:2});
+    debtDollarCells.push({r:debtRows.length-1, c:4});
+  }
+  debtRows.push(['', '', '', 'TOTAL MONTHLY DEBT PAYMENTS:', debtPmtTot]);
+  debtDollarCells.push({r:debtRows.length-1, c:4});
+
+  var debtWS = XLSX.utils.aoa_to_sheet(debtRows);
+  debtDollarCells.forEach(function(ref) {
+    var cell = XLSX.utils.encode_cell(ref);
+    if (debtWS[cell] && debtWS[cell].t === 'n') {
+      debtWS[cell].z = '"$"#,##0.00';
+    }
+  });
+  debtWS['!cols'] = cols([28, 28, 18, 20, 18]);
+  XLSX.utils.book_append_sheet(wb, debtWS, 'Debts');
+
+  // ── Write file ──────────────────────────────
+  var rawName = clientName && clientName !== '—' ? clientName : 'Client';
+  var safeName = rawName.replace(/[^a-zA-Z0-9\s\-]/g,'').trim().replace(/\s+/g,'-');
+  XLSX.writeFile(wb, 'FinancialDeclaration-' + safeName + '.xlsx');
+}
+
+// ── Init ────────────────────────────────────────
+updateNav();
+updateProgress();
+</script>
+</body>
+</html>

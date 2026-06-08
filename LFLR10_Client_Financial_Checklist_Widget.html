@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LFLR 10 Financial Document Checklist — Dellino Family Law Group</title>
+<style>
+  :root {
+    --navy:   #1F3864;
+    --blue:   #2E5396;
+    --orange: #C77700;
+    --orange-bg: #FFF4E0;
+    --green:  #276A3F;
+    --green-bg: #EAF5EE;
+    --gray:   #595959;
+    --light:  #F4F6FB;
+    --border: #D0D8E8;
+    --white:  #FFFFFF;
+    --red:    #C0392B;
+    --red-bg: #FDF0EE;
+    --progress-track: #D0D8E8;
+    --font: 'Georgia', 'Times New Roman', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: #EEF1F8;
+    color: #222;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ── Header ── */
+  .site-header {
+    background: var(--navy);
+    color: white;
+    padding: 18px 32px 14px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .site-header .firm { font-family: var(--sans); font-size: 13px; opacity: .75; letter-spacing: .03em; }
+  .site-header .title { font-size: 20px; font-weight: bold; }
+
+  /* ── Progress bar ── */
+  .progress-wrap {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .progress-label { font-family: var(--sans); font-size: 13px; color: var(--gray); min-width: 90px; }
+  .progress-bar-outer {
+    flex: 1;
+    height: 10px;
+    background: var(--progress-track);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .progress-bar-inner {
+    height: 100%;
+    background: var(--green);
+    border-radius: 6px;
+    transition: width .3s ease;
+    width: 0%;
+  }
+  .progress-count { font-family: var(--sans); font-size: 13px; color: var(--gray); min-width: 60px; text-align: right; }
+
+  /* ── Main content ── */
+  .container { max-width: 860px; margin: 0 auto; padding: 28px 24px 0; }
+
+  /* ── Intro card ── */
+  .intro-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 22px 26px;
+    margin-bottom: 20px;
+  }
+  .intro-card h1 {
+    font-size: 22px;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .intro-card p {
+    font-size: 15px;
+    line-height: 1.65;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  .intro-card p:last-child { margin-bottom: 0; }
+
+  /* ── Callout box ── */
+  .callout {
+    border-radius: 6px;
+    border: 1px solid #E0C080;
+    border-left: 5px solid var(--orange);
+    background: var(--orange-bg);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .callout.danger {
+    border-color: #E8B0A8;
+    border-left-color: var(--red);
+    background: var(--red-bg);
+  }
+  .callout-label {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--orange);
+    margin-bottom: 6px;
+  }
+  .callout.danger .callout-label { color: var(--red); }
+  .callout p { font-size: 14px; line-height: 1.6; }
+
+  /* ── Section accordion ── */
+  .section-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid transparent;
+    transition: background .15s;
+  }
+  .section-header:hover { background: var(--light); }
+  .section-card.open .section-header { border-bottom-color: var(--border); }
+  .section-num {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    background: var(--blue);
+    border-radius: 50%;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-num.complete { background: var(--green); }
+  .section-num.na { background: var(--gray); }
+  .section-title { flex: 1; font-size: 16px; font-weight: bold; color: var(--navy); }
+  .section-badge {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--gray);
+    background: var(--light);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2px 10px;
+  }
+  .section-badge.complete { color: var(--green); background: var(--green-bg); border-color: #A8D8B8; }
+  .section-badge.na { color: var(--gray); background: #F0F0F0; border-color: #CCC; }
+  .chevron {
+    font-size: 11px;
+    color: var(--gray);
+    transition: transform .2s;
+    flex-shrink: 0;
+  }
+  .section-card.open .chevron { transform: rotate(180deg); }
+
+  .section-body { display: none; padding: 16px 20px 20px; }
+  .section-card.open .section-body { display: block; }
+  .section-description { font-size: 14px; line-height: 1.65; color: #444; margin-bottom: 14px; }
+
+  /* ── Conditional toggle ── */
+  .conditional-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--light);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .conditional-toggle input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--navy); cursor: pointer; }
+  .conditional-toggle label { cursor: pointer; font-family: var(--sans); color: #333; }
+  .conditional-items { display: none; }
+  .conditional-items.visible { display: block; }
+
+  /* ── Checklist items ── */
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: #FAFBFE;
+    transition: background .15s, border-color .15s;
+    cursor: pointer;
+  }
+  .check-item:hover { background: var(--light); border-color: #B0BEDD; }
+  .check-item.checked {
+    background: var(--green-bg);
+    border-color: #A8D8B8;
+  }
+  .check-item input[type=checkbox] {
+    width: 18px; height: 18px;
+    margin-top: 1px;
+    accent-color: var(--green);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .check-item-content { flex: 1; }
+  .check-item-label {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #222;
+  }
+  .check-item.checked .check-item-label { color: var(--gray); text-decoration: line-through; text-decoration-color: #9AB; }
+  .check-item-hint {
+    font-size: 12px;
+    color: var(--gray);
+    font-style: italic;
+    margin-top: 4px;
+    line-height: 1.45;
+    font-family: var(--sans);
+  }
+
+  /* ── Section divider label ── */
+  .sub-label {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--blue);
+    margin: 16px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Completion banner ── */
+  .complete-banner {
+    display: none;
+    background: var(--green-bg);
+    border: 1px solid #A8D8B8;
+    border-radius: 8px;
+    padding: 18px 22px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .complete-banner.visible { display: block; }
+  .complete-banner h2 { color: var(--green); font-size: 18px; margin-bottom: 6px; }
+  .complete-banner p { font-size: 14px; color: #444; }
+
+  /* ── Print button ── */
+  .action-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    margin-bottom: 32px;
+  }
+  .btn {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn-primary { background: var(--navy); color: white; }
+  .btn-secondary { background: white; color: var(--navy); border: 1px solid var(--navy); }
+  .btn-danger-outline { background: white; color: var(--red); border: 1px solid var(--red); }
+
+  /* ── Print styles ── */
+  @media print {
+    body { background: white; }
+    .progress-wrap, .action-row, .site-header { display: none; }
+    .container { max-width: 100%; padding: 0; }
+    .section-body { display: block !important; }
+    .section-card { border: 1px solid #CCC; page-break-inside: avoid; }
+    .section-header { cursor: default; }
+    .conditional-items { display: block !important; }
+    .complete-banner { display: none !important; }
+  }
+
+  @media (max-width: 600px) {
+    .site-header { padding: 14px 16px; }
+    .container { padding: 16px 12px 0; }
+    .progress-wrap { padding: 10px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div>
+    <div class="firm">Dellino Family Law Group</div>
+    <div class="title">LFLR 10 Financial Document Checklist</div>
+  </div>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">Progress</span>
+  <div class="progress-bar-outer">
+    <div class="progress-bar-inner" id="progressBar"></div>
+  </div>
+  <span class="progress-count" id="progressCount">0 / 0</span>
+</div>
+
+<div class="container">
+
+  <!-- Intro -->
+  <div class="intro-card">
+    <h1>Financial Document Collection Checklist</h1>
+    <p>King County Superior Court requires specific financial documents under <strong>Local Family Law Rule 10 (LFLR 10)</strong> for any hearing involving child support, spousal maintenance, or other financial issues. This checklist guides you through collecting every required document.</p>
+    <p>Check each item as you locate it. Bring everything to your attorney or upload it through the firm&rsquo;s secure portal. Some sections are conditional &mdash; read the toggle question at the top of each to determine whether it applies to you.</p>
+  </div>
+
+  <!-- Redaction callout -->
+  <div class="callout danger">
+    <div class="callout-label">⚠ Redaction Required Before Filing</div>
+    <p>Before providing documents to your attorney for court filing, you must black out: <strong>(1) Social Security numbers &nbsp; (2) Driver&rsquo;s license numbers &nbsp; (3) Telephone numbers &nbsp; (4) Children&rsquo;s dates of birth &nbsp; (5) All but the last four digits of any account number.</strong> Flag these when handing over documents.</p>
+  </div>
+
+  <!-- Completion banner -->
+  <div class="complete-banner" id="completeBanner">
+    <h2>&#10003; All items complete!</h2>
+    <p>You&rsquo;ve checked every applicable item. Contact your attorney to arrange delivery of your documents.</p>
+  </div>
+
+  <!-- ── SECTION 1: FINANCIAL DECLARATION ── -->
+  <div class="section-card open" id="sec1">
+    <div class="section-header" onclick="toggleSection('sec1')">
+      <div class="section-num" id="num1">1</div>
+      <div class="section-title">Financial Declaration (Court Form)</div>
+      <span class="section-badge" id="badge1">0 / 1</span>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <p class="section-description">The Financial Declaration is the required court form that summarizes your income, monthly expenses, assets, debts, and available cash. All supporting documents in this checklist are exhibits to this form. Your attorney will provide the current version of the form.</p>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">Signed Financial Declaration (WPF DR 01.0550 or current equivalent form)</div>
+          <div class="check-item-hint">Complete every section before signing. Write &ldquo;N/A&rdquo; on any section that does not apply rather than leaving it blank.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: PAY STUBS ── -->
+  <div class="section-card" id="sec2">
+    <div class="section-header" onclick="toggleSection('sec2')">
+      <div class="section-num" id="num2">2</div>
+      <div class="section-title">Pay Stubs &mdash; Last 6 Months</div>
+      <span class="section-badge" id="badge2">0 / 3</span>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <p class="section-description">Collect all pay stubs or equivalent income records for every pay period in the past six months, measured back from the date of your hearing or filing. All income sources must be documented.</p>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">Pay stubs from all jobs and employers, covering every pay period in the past six months</div>
+          <div class="check-item-hint">Include all employers. Do not skip any period, even partial ones.</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">If you do not receive pay stubs: bank records, invoices, or contracts showing all income and deductions</div>
+          <div class="check-item-hint">Required for self-employed individuals, contractors, gig workers, and cash-paid workers. Check this if not applicable to you.</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">If you receive government benefits: award letters or benefit statements (Social Security, SSDI/SSI, unemployment, workers&rsquo; compensation, VA benefits)</div>
+          <div class="check-item-hint">All income sources must be documented regardless of source. Check this if not applicable to you.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: PERSONAL TAX RETURNS ── -->
+  <div class="section-card" id="sec3">
+    <div class="section-header" onclick="toggleSection('sec3')">
+      <div class="section-num" id="num3">3</div>
+      <div class="section-title">Personal Tax Returns &mdash; Prior Two Years</div>
+      <span class="section-badge" id="badge3">0 / 6</span>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <p class="section-description">Provide <strong>complete</strong> federal tax returns for each of the two most recent calendar years &mdash; not a summary, transcript, or preview. Every schedule, W-2, and 1099 must be included.</p>
+      <div class="sub-label">Most Recent Tax Year</div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">Federal Form 1040 for the most recent filed year (complete return as filed)</div>
+          <div class="check-item-hint">Must be the full return, not a draft or tax software summary screen.</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">All Schedules filed with that return (A, B, C, D, E, F, SE, 1, 2, 3, and any others)</div>
+          <div class="check-item-hint">Include every schedule even if it shows a loss, zero, or a single entry.</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">All W-2 and 1099 forms for the most recent tax year (from every employer and payer)</div>
+          <div class="check-item-hint">Collect every W-2 and every 1099 type you received (1099-INT, 1099-DIV, 1099-NEC, 1099-R, 1099-SSA, 1099-G, etc.).</div>
+        </div>
+      </div>
+      <div class="sub-label">Prior Tax Year</div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">Federal Form 1040 for the prior year (complete return as filed)</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">All Schedules filed with the prior year return</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">All W-2 and 1099 forms for the prior tax year</div>
+          <div class="check-item-hint">Also include any state tax returns if you lived or worked in a state with an income tax either year (Washington has none).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: BUSINESS RETURNS (conditional) ── -->
+  <div class="section-card" id="sec4">
+    <div class="section-header" onclick="toggleSection('sec4')">
+      <div class="section-num" id="num4">4</div>
+      <div class="section-title">Business Entity Tax Returns</div>
+      <span class="section-badge" id="badge4">N/A</span>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <p class="section-description">Required only if you own <strong>5% or more</strong> of any corporation, partnership, LLC, S-Corp, or other entity that files its own tax return. Answer the question below to determine whether this section applies.</p>
+      <div class="conditional-toggle" onclick="toggleConditional('cond4', this)">
+        <input type="checkbox" id="cond4toggle" onclick="event.stopPropagation(); toggleConditional('cond4', this.closest('.conditional-toggle'))">
+        <label for="cond4toggle">Yes &mdash; I own 5% or more of a business entity that files its own tax return</label>
+      </div>
+      <div class="conditional-items" id="cond4">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+          <div class="check-item-content">
+            <div class="check-item-label">Complete business tax return(s) for each entity for the prior two years (Form 1120, 1120-S, 1065, or equivalent)</div>
+            <div class="check-item-hint">Must include all schedules, attachments, and K-1 forms. One complete return per entity, per year.</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+          <div class="check-item-content">
+            <div class="check-item-label">List of all business entities in which you hold a 5% or greater ownership interest (name, type, ownership %)</div>
+            <div class="check-item-hint">Entity type examples: S-Corp, C-Corp, LLC, partnership, LLP.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 5: FINANCIAL ACCOUNT STATEMENTS ── -->
+  <div class="section-card" id="sec5">
+    <div class="section-header" onclick="toggleSection('sec5')">
+      <div class="section-num" id="num5">5</div>
+      <div class="section-title">Financial Account Statements &mdash; Last 6 Months</div>
+      <span class="section-badge" id="badge5">0 / 7</span>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <p class="section-description">Collect statements for <strong>every</strong> financial account in which you have or had any interest during the past six months. &ldquo;Financial institutions&rdquo; is defined broadly &mdash; review every category below.</p>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">Checking and savings account statements from all banks and credit unions</div>
+          <div class="check-item-hint">Include personal, joint, and any account over which you have signing authority.</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">Investment and brokerage account statements (stocks, bonds, ETFs, mutual funds)</div>
+          <div class="check-item-hint">Fidelity, Schwab, Vanguard, Merrill Lynch, Edward Jones, and similar platforms.</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">Retirement account statements (401(k), 403(b), IRA, Roth IRA, SEP-IRA, SIMPLE IRA, pension plan)</div>
+          <div class="check-item-hint">Monthly or quarterly statements covering the full six-month period.</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">Money market funds, certificates of deposit (CDs), and Treasury bills</div>
+          <div class="check-item-hint">Include CDs even if they have not yet matured.</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">Health Savings Account (HSA) and Flexible Spending Account (FSA) statements</div>
+          <div class="check-item-hint">Include if either party holds one of these accounts. Check if not applicable.</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">Cryptocurrency exchange and digital wallet statements (Coinbase, Kraken, Binance, Gemini, or similar)</div>
+          <div class="check-item-hint">Include any account holding or transacting in cryptocurrency. Check if not applicable.</div>
+        </div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+        <div class="check-item-content">
+          <div class="check-item-label">Statements for accounts closed within the past six months</div>
+          <div class="check-item-hint">Include the final statement and, if available, the closure confirmation. Check if not applicable.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 6: NON-TAXABLE INCOME (conditional) ── -->
+  <div class="section-card" id="sec6">
+    <div class="section-header" onclick="toggleSection('sec6')">
+      <div class="section-num" id="num6">6</div>
+      <div class="section-title">Non-Taxable Income and Benefits</div>
+      <span class="section-badge" id="badge6">N/A</span>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <p class="section-description">Required only if you receive (or have received in the past two years) income or benefits that do <strong>not</strong> appear on your tax return. Common examples: trust distributions, regular gifts, barter income, or certain settlement proceeds.</p>
+      <div class="conditional-toggle" onclick="toggleConditional('cond6', this)">
+        <input type="checkbox" id="cond6toggle" onclick="event.stopPropagation(); toggleConditional('cond6', this.closest('.conditional-toggle'))">
+        <label for="cond6toggle">Yes &mdash; I receive or have received non-taxable income or benefits in the past two years</label>
+      </div>
+      <div class="conditional-items" id="cond6">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+          <div class="check-item-content">
+            <div class="check-item-label">Trust distributions: trustee statements, trust accountings, or distribution letters for the prior two years</div>
+            <div class="check-item-hint">Include the trust name, trustee contact, and your relationship to the trust.</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+          <div class="check-item-content">
+            <div class="check-item-label">Gifts of money or property: written documentation of the source, amount, and date of each gift</div>
+            <div class="check-item-hint">Recurring or large one-time gifts must be documented. Family gifts count.</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+          <div class="check-item-content">
+            <div class="check-item-label">Barter income: records of the fair market value of goods or services received in exchange for your goods or services</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+          <div class="check-item-content">
+            <div class="check-item-label">Workers&rsquo; compensation or personal injury settlement proceeds not reflected in your tax return</div>
+            <div class="check-item-hint">Provide award letters, settlement agreements, or payment records.</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+          <div class="check-item-content">
+            <div class="check-item-label">Regular payments received from another person (other than a spouse) not reported as income</div>
+            <div class="check-item-hint">Document the source, amount, and frequency.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 7: CHILD SUPPORT (conditional) ── -->
+  <div class="section-card" id="sec7">
+    <div class="section-header" onclick="toggleSection('sec7')">
+      <div class="section-num" id="num7">7</div>
+      <div class="section-title">Child Support Worksheets</div>
+      <span class="section-badge" id="badge7">N/A</span>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <p class="section-description">Required only if either party is asking the Court to order, modify, or address child support &mdash; or to order payment of a child&rsquo;s expenses (tuition, childcare, medical costs, etc.).</p>
+      <div class="conditional-toggle" onclick="toggleConditional('cond7', this)">
+        <input type="checkbox" id="cond7toggle" onclick="event.stopPropagation(); toggleConditional('cond7', this.closest('.conditional-toggle'))">
+        <label for="cond7toggle">Yes &mdash; Child support or children&rsquo;s expenses are at issue in my proceeding</label>
+      </div>
+      <div class="conditional-items" id="cond7">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+          <div class="check-item-content">
+            <div class="check-item-label">Completed Washington State Child Support Worksheets (WSCSS Worksheets)</div>
+            <div class="check-item-hint">Both parties must file. Ask your attorney whether you need to prepare your own or whether they will prepare from your income data.</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+          <div class="check-item-content">
+            <div class="check-item-label">Current childcare cost documentation: invoices, enrollment letters, or provider statements (past 6 months)</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+          <div class="check-item-content">
+            <div class="check-item-label">Children&rsquo;s health insurance premium documentation (showing the portion attributable to the children, not the full family premium)</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+          <div class="check-item-content">
+            <div class="check-item-label">Documentation of extraordinary medical, educational, or special needs expenses for the children (receipts, invoices, or statements for the past 6 months)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 8: CHECK REGISTERS ── -->
+  <div class="section-card" id="sec8">
+    <div class="section-header" onclick="toggleSection('sec8')">
+      <div class="section-num" id="num8">8</div>
+      <div class="section-title">Check Registers &mdash; If Requested</div>
+      <span class="section-badge" id="badge8">0 / 1</span>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <p class="section-description">Check registers are not automatically required. However, if the other party requests them, you must produce them within <strong>14 days</strong>. Keep your records accessible and organized now so you can meet that deadline.</p>
+      <div class="callout">
+        <div class="callout-label">14-Day Deadline</div>
+        <p>The production deadline runs from the date of the other party&rsquo;s written request &mdash; not from when you discover the request. Tell your attorney immediately upon receiving any such request.</p>
+      </div>
+      <div style="margin-top:12px;">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" onclick="event.stopPropagation(); toggleCheck(this.closest('.check-item'))">
+          <div class="check-item-content">
+            <div class="check-item-label">Physical checkbook register or printed/downloaded transaction history for all checking accounts with activity in the past six months</div>
+            <div class="check-item-hint">Retain these even if no request has been made. Check this box once you have confirmed your records are organized and accessible.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FILING INSTRUCTIONS ── -->
+  <div class="section-card" id="sec9">
+    <div class="section-header" onclick="toggleSection('sec9')">
+      <div class="section-num" id="num9" style="background:var(--navy);">&#9432;</div>
+      <div class="section-title">Filing Instructions</div>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <div class="callout">
+        <div class="callout-label">Sealed Financial Source Documents</div>
+        <p>Tax returns, pay stubs, bank statements, and other financial institution statements must <strong>not</strong> be attached directly to the Financial Declaration. They are submitted separately to the Clerk under a cover sheet captioned <em>&ldquo;Sealed Financial Source Documents.&rdquo;</em> Once filed under seal, only a party to the case or their attorney may access these documents from the court file without a separate court order.</p>
+      </div>
+      <div class="callout danger" style="margin-top:12px;">
+        <div class="callout-label">Redact Before Filing &mdash; Final Checklist</div>
+        <p>Confirm with your attorney that the following have been blacked out on <strong>every</strong> document before filing:</p>
+        <ul style="margin: 8px 0 0 18px; font-size:14px; line-height:1.7;">
+          <li>Social Security numbers</li>
+          <li>Driver&rsquo;s license numbers</li>
+          <li>Telephone numbers</li>
+          <li>Children&rsquo;s dates of birth</li>
+          <li>All but the last four digits of any account number</li>
+        </ul>
+      </div>
+      <p style="font-size:13px; color:var(--gray); margin-top:14px; font-style:italic;">Questions? Contact Dellino Family Law Group at your attorney&rsquo;s direct line or through the firm&rsquo;s secure client portal. Do not send financial documents by unencrypted email.</p>
+    </div>
+  </div>
+
+  <!-- Action row -->
+  <div class="action-row">
+    <button class="btn btn-primary" onclick="window.print()">&#128438; Print Checklist</button>
+    <button class="btn btn-secondary" onclick="resetAll()">&#8635; Reset All Checkboxes</button>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+  // ── State ────────────────────────────────────────────────────────────────
+  // Sections with fixed item counts (conditional sections tracked separately)
+  const FIXED_COUNTS = {
+    sec1: 1,
+    sec2: 3,
+    sec3: 6,
+    sec5: 7,
+    sec8: 1
+  };
+  // Conditional section item counts (when enabled)
+  const CONDITIONAL_COUNTS = {
+    sec4: 2,  // business returns
+    sec6: 5,  // non-taxable income
+    sec7: 4   // child support
+  };
+  const conditionalEnabled = { sec4: false, sec6: false, sec7: false };
+
+  function allItems() {
+    return document.querySelectorAll('.check-item input[type=checkbox]');
+  }
+
+  function activeItems() {
+    // All checkboxes that are visible/applicable
+    const all = allItems();
+    return Array.from(all).filter(cb => {
+      // If inside a conditional-items div, only count if that conditional is enabled
+      const condParent = cb.closest('.conditional-items');
+      if (condParent) {
+        const id = condParent.id; // e.g. "cond4"
+        const secId = 'sec' + id.replace('cond', '');
+        return conditionalEnabled[secId];
+      }
+      return true;
+    });
+  }
+
+  function updateProgress() {
+    const active = activeItems();
+    const total = active.length;
+    const checked = active.filter(cb => cb.checked).length;
+    const pct = total === 0 ? 0 : Math.round((checked / total) * 100);
+
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressCount').textContent = checked + ' / ' + total;
+
+    // Section badges
+    updateSectionBadges();
+
+    // Completion banner
+    const banner = document.getElementById('completeBanner');
+    if (total > 0 && checked === total) {
+      banner.classList.add('visible');
+    } else {
+      banner.classList.remove('visible');
+    }
+
+    // Persist state
+    saveState();
+  }
+
+  function updateSectionBadges() {
+    // Fixed sections
+    Object.keys(FIXED_COUNTS).forEach(secId => {
+      const section = document.getElementById(secId);
+      if (!section) return;
+      const items = section.querySelectorAll('.check-item:not(.conditional-items .check-item) input[type=checkbox]');
+      const total = items.length;
+      const checked = Array.from(items).filter(cb => cb.checked).length;
+      const badge = document.getElementById('badge' + secId.replace('sec', ''));
+      const num = document.getElementById('num' + secId.replace('sec', ''));
+      if (badge) {
+        badge.textContent = checked + ' / ' + total;
+        if (checked === total && total > 0) {
+          badge.className = 'section-badge complete';
+          if (num) num.className = 'section-num complete';
+        } else {
+          badge.className = 'section-badge';
+          if (num) num.className = 'section-num';
+        }
+      }
+    });
+
+    // Conditional sections
+    ['sec4','sec6','sec7'].forEach(secId => {
+      const badge = document.getElementById('badge' + secId.replace('sec', ''));
+      const num = document.getElementById('num' + secId.replace('sec', ''));
+      if (!badge) return;
+      if (!conditionalEnabled[secId]) {
+        badge.textContent = 'N/A';
+        badge.className = 'section-badge na';
+        if (num) num.className = 'section-num na';
+        return;
+      }
+      const condId = 'cond' + secId.replace('sec', '');
+      const condDiv = document.getElementById(condId);
+      if (!condDiv) return;
+      const items = condDiv.querySelectorAll('.check-item input[type=checkbox]');
+      const total = items.length;
+      const checked = Array.from(items).filter(cb => cb.checked).length;
+      badge.textContent = checked + ' / ' + total;
+      if (checked === total && total > 0) {
+        badge.className = 'section-badge complete';
+        if (num) num.className = 'section-num complete';
+      } else {
+        badge.className = 'section-badge';
+        if (num) num.className = 'section-num';
+      }
+    });
+  }
+
+  function toggleCheck(item) {
+    const cb = item.querySelector('input[type=checkbox]');
+    cb.checked = !cb.checked;
+    if (cb.checked) {
+      item.classList.add('checked');
+    } else {
+      item.classList.remove('checked');
+    }
+    updateProgress();
+  }
+
+  function toggleSection(id) {
+    const card = document.getElementById(id);
+    card.classList.toggle('open');
+  }
+
+  function toggleConditional(condId, toggleEl) {
+    const cb = toggleEl.querySelector('input[type=checkbox]');
+    cb.checked = !cb.checked;
+    const secId = 'sec' + condId.replace('cond', '');
+    conditionalEnabled[secId] = cb.checked;
+    const condDiv = document.getElementById(condId);
+    if (cb.checked) {
+      condDiv.classList.add('visible');
+    } else {
+      condDiv.classList.remove('visible');
+      // Uncheck all items in this conditional when hiding
+      condDiv.querySelectorAll('.check-item').forEach(item => {
+        item.classList.remove('checked');
+        item.querySelector('input[type=checkbox]').checked = false;
+      });
+    }
+    updateProgress();
+  }
+
+  function resetAll() {
+    if (!confirm('Reset all checkboxes and conditional sections? This cannot be undone.')) return;
+    allItems().forEach(cb => {
+      cb.checked = false;
+      cb.closest('.check-item').classList.remove('checked');
+    });
+    // Reset conditionals
+    ['4','6','7'].forEach(n => {
+      conditionalEnabled['sec' + n] = false;
+      const condDiv = document.getElementById('cond' + n);
+      if (condDiv) condDiv.classList.remove('visible');
+      const cb = document.getElementById('cond' + n + 'toggle');
+      if (cb) cb.checked = false;
+    });
+    updateProgress();
+    localStorage.removeItem('lflr10_state');
+  }
+
+  // ── Persistence ──────────────────────────────────────────────────────────
+  function saveState() {
+    try {
+      const checks = Array.from(allItems()).map(cb => cb.checked);
+      const state = { checks, conditionalEnabled };
+      localStorage.setItem('lflr10_state', JSON.stringify(state));
+    } catch(e) {}
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem('lflr10_state');
+      if (!raw) return;
+      const state = JSON.parse(raw);
+      // Restore conditionals first
+      if (state.conditionalEnabled) {
+        Object.assign(conditionalEnabled, state.conditionalEnabled);
+        ['4','6','7'].forEach(n => {
+          const secId = 'sec' + n;
+          if (conditionalEnabled[secId]) {
+            const condDiv = document.getElementById('cond' + n);
+            if (condDiv) condDiv.classList.add('visible');
+            const cb = document.getElementById('cond' + n + 'toggle');
+            if (cb) cb.checked = true;
+          }
+        });
+      }
+      // Restore checkboxes
+      if (state.checks) {
+        const items = Array.from(allItems());
+        state.checks.forEach((checked, i) => {
+          if (items[i]) {
+            items[i].checked = checked;
+            if (checked) items[i].closest('.check-item').classList.add('checked');
+          }
+        });
+      }
+      updateProgress();
+    } catch(e) {}
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    loadState();
+    updateProgress();
+  });
+</script>
+</body>
+</html>
